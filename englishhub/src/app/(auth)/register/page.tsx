@@ -41,32 +41,21 @@ export default function RegisterPage() {
     const supabase = createClient()
 
     // Create auth user
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: fullName,
+          role: 'tutor',
+        },
+      },
     })
 
     if (signUpError) {
       setError(signUpError.message)
       setLoading(false)
       return
-    }
-
-    // Create tutor profile
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from('tutors')
-        .insert({
-          auth_id: data.user.id,
-          email,
-          full_name: fullName,
-        })
-
-      if (profileError) {
-        setError(t('profileError'))
-        setLoading(false)
-        return
-      }
     }
 
     router.push(toLocalizedPath('/', locale))

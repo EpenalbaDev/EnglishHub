@@ -59,6 +59,9 @@ export async function GET(
       const created = await admin.auth.admin.createUser({
         email,
         email_confirm: true,
+        user_metadata: {
+          role: 'student',
+        },
       })
 
       if (created.error && !created.error.message.toLowerCase().includes('already')) {
