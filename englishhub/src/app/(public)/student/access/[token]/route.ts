@@ -78,24 +78,17 @@ export async function GET(
     }
   }
 
-  if (generatedLink.error || !generatedLink.data?.properties?.action_link) {
+  if (generatedLink.error || !generatedLink.data?.properties) {
     return redirectToLoginWithError(request.nextUrl.origin, 'magic_link_failed')
   }
 
-  // Extract the OTP verification data from the generated link
-  const actionLink = generatedLink.data.properties.action_link
-  let otpTokenHash: string | null = null
-  let otpType: string | null = null
+  // Use hashed_token and verification_type directly from the response properties.
+  // Parsing the action_link URL is fragile since the param name varies across
+  // Supabase versions (token vs token_hash).
+  const otpTokenHash = generatedLink.data.properties.hashed_token
+  const otpType = (generatedLink.data.properties.verification_type || 'magiclink') as EmailOtpType
 
-  try {
-    const parsedActionLink = new URL(actionLink)
-    otpTokenHash = parsedActionLink.searchParams.get('token_hash')
-    otpType = parsedActionLink.searchParams.get('type')
-  } catch {
-    // Could not parse action_link
-  }
-
-  if (!otpTokenHash || !otpType) {
+  if (!otpTokenHash) {
     return redirectToLoginWithError(request.nextUrl.origin, 'magic_link_failed')
   }
 
@@ -122,12 +115,12 @@ export async function GET(
   )
 
   const { error: verifyError } = await supabase.auth.verifyOtp({
-    type: otpType as EmailOtpType,
+    type: otpType,
     token_hash: otpTokenHash,
   })
 
   if (verifyError) {
-    return redirectToLoginWithError(request.nextUrl.origin, 'magic_link_failed')
+    return redirectToLoginWithError(request.nextUrl.origin, 'verify_failed')
   }
 
   // Update access link usage stats

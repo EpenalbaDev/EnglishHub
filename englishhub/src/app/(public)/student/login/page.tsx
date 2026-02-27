@@ -10,7 +10,8 @@ export default function StudentLoginPage() {
   const errorMessage = useMemo(() => {
     if (errorCode === 'link_expired') return 'Este link vencio o ya no es valido. Pidele a tu profesor uno nuevo.'
     if (errorCode === 'student_without_email') return 'Este estudiante no tiene email configurado. Tu profesor debe agregarlo.'
-    if (errorCode === 'magic_link_failed') return 'No se pudo iniciar sesion con este link. Pidele a tu profesor generar uno nuevo.'
+    if (errorCode === 'magic_link_failed') return 'No se pudo generar la sesion. Pidele a tu profesor generar un link nuevo.'
+    if (errorCode === 'verify_failed') return 'No se pudo verificar el link de acceso. Pidele a tu profesor generar uno nuevo.'
     return null
   }, [errorCode])
 
