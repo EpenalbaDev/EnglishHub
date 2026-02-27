@@ -1,6 +1,8 @@
 import { createHash } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 import { createAdminClient } from '@/lib/supabase/admin'
+import type { EmailOtpType } from '@supabase/supabase-js'
 
 function hashToken(token: string) {
   return createHash('sha256').update(token).digest('hex')
@@ -44,7 +46,7 @@ export async function GET(
     return redirectToLoginWithError(request.nextUrl.origin, 'student_without_email')
   }
 
-  const redirectTo = `${request.nextUrl.origin}/es/student/dashboard`
+  const redirectTo = `${request.nextUrl.origin}/student/dashboard`
 
   let generatedLink = await admin.auth.admin.generateLink({
     type: 'magiclink',
@@ -80,6 +82,55 @@ export async function GET(
     return redirectToLoginWithError(request.nextUrl.origin, 'magic_link_failed')
   }
 
+  // Extract the OTP verification data from the generated link
+  const actionLink = generatedLink.data.properties.action_link
+  let otpTokenHash: string | null = null
+  let otpType: string | null = null
+
+  try {
+    const parsedActionLink = new URL(actionLink)
+    otpTokenHash = parsedActionLink.searchParams.get('token_hash')
+    otpType = parsedActionLink.searchParams.get('type')
+  } catch {
+    // Could not parse action_link
+  }
+
+  if (!otpTokenHash || !otpType) {
+    return redirectToLoginWithError(request.nextUrl.origin, 'magic_link_failed')
+  }
+
+  // Verify the OTP directly and set session cookies on the redirect response.
+  // This avoids the multi-hop redirect chain that loses cookies.
+  const dashboardUrl = new URL('/student/dashboard', request.nextUrl.origin)
+  const response = NextResponse.redirect(dashboardUrl)
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  const { error: verifyError } = await supabase.auth.verifyOtp({
+    type: otpType as EmailOtpType,
+    token_hash: otpTokenHash,
+  })
+
+  if (verifyError) {
+    return redirectToLoginWithError(request.nextUrl.origin, 'magic_link_failed')
+  }
+
+  // Update access link usage stats
   await admin
     .from('student_access_links')
     .update({
@@ -88,23 +139,5 @@ export async function GET(
     })
     .eq('id', linkRecord.id)
 
-  const actionLink = generatedLink.data.properties.action_link
-  let confirmUrl: URL | null = null
-
-  try {
-    const parsedActionLink = new URL(actionLink)
-    const tokenHash = parsedActionLink.searchParams.get('token_hash')
-    const type = parsedActionLink.searchParams.get('type')
-
-    if (tokenHash && type) {
-      confirmUrl = new URL('/auth/confirm', request.nextUrl.origin)
-      confirmUrl.searchParams.set('token_hash', tokenHash)
-      confirmUrl.searchParams.set('type', type)
-      confirmUrl.searchParams.set('next', '/student/dashboard')
-    }
-  } catch {
-    // Fallback below if action_link cannot be parsed.
-  }
-
-  return NextResponse.redirect(confirmUrl ?? actionLink)
+  return response
 }
