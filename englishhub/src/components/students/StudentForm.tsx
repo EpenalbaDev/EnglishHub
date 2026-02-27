@@ -102,14 +102,19 @@ export function StudentForm({ open, onClose, onSubmit, student }: StudentFormPro
       return
     }
 
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    const normalizedEmail = formData.email?.trim().toLowerCase() || null
+
+    if (normalizedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       setError('El formato del email no es válido.')
       return
     }
 
     setLoading(true)
     try {
-      await onSubmit(formData)
+      await onSubmit({
+        ...formData,
+        email: normalizedEmail,
+      })
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al guardar.')

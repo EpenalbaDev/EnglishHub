@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreHorizontal, Pencil, CreditCard, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Pencil, CreditCard, Trash2, Link as LinkIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn, getInitials, formatCurrency, formatDate } from '@/lib/utils'
 import type { Student } from '@/types/database'
@@ -50,9 +50,10 @@ interface StudentTableProps {
   students: Student[]
   onEdit: (student: Student) => void
   onDelete: (student: Student) => void
+  onGenerateAccessLink: (student: Student) => void
 }
 
-export function StudentTable({ students, onEdit, onDelete }: StudentTableProps) {
+export function StudentTable({ students, onEdit, onDelete, onGenerateAccessLink }: StudentTableProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-neutral-100">
       <Table>
@@ -124,6 +125,10 @@ export function StudentTable({ students, onEdit, onDelete }: StudentTableProps) 
                         <CreditCard className="mr-2 h-4 w-4" strokeWidth={1.75} />
                         Ver pagos
                       </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onGenerateAccessLink(student)}>
+                      <LinkIcon className="mr-2 h-4 w-4" strokeWidth={1.75} />
+                      Generar link de acceso
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => onDelete(student)}

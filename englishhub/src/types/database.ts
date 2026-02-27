@@ -51,6 +51,19 @@ export interface Student {
   updated_at: string
 }
 
+export interface StudentAccessLink {
+  id: string
+  tutor_id: string
+  student_id: string
+  token_hash: string
+  expires_at: string
+  revoked_at: string | null
+  last_used_at: string | null
+  use_count: number
+  created_by: string
+  created_at: string
+}
+
 export interface Payment {
   id: string
   tutor_id: string

@@ -1,43 +1,21 @@
 'use client'
 
-import { useState } from 'react'
-import { Mail, Loader2, CheckCircle, BookOpen } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { createClient } from '@/lib/supabase/client'
+import { useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { AlertCircle, BookOpen, Link as LinkIcon, Mail } from 'lucide-react'
 
 export default function StudentLoginPage() {
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [sent, setSent] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email.trim()) return
-
-    setLoading(true)
-    setError(null)
-
-    const { error: authError } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/student/dashboard`,
-      },
-    })
-
-    if (authError) {
-      setError(authError.message)
-    } else {
-      setSent(true)
-    }
-    setLoading(false)
-  }
+  const searchParams = useSearchParams()
+  const errorCode = searchParams.get('error')
+  const errorMessage = useMemo(() => {
+    if (errorCode === 'link_expired') return 'Este link vencio o ya no es valido. Pidele a tu profesor uno nuevo.'
+    if (errorCode === 'student_without_email') return 'Este estudiante no tiene email configurado. Tu profesor debe agregarlo.'
+    if (errorCode === 'magic_link_failed') return 'No se pudo iniciar sesion con este link. Pidele a tu profesor generar uno nuevo.'
+    return null
+  }, [errorCode])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-50 to-neutral-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-primary-50 to-neutral-50 px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 text-center">
@@ -49,58 +27,30 @@ export default function StudentLoginPage() {
         </div>
 
         <div className="card-base">
-          {sent ? (
-            <div className="text-center py-4">
-              <CheckCircle className="mx-auto h-12 w-12 text-success" strokeWidth={1.5} />
-              <h2 className="mt-4 font-heading text-xl text-neutral-800">¡Revisa tu correo!</h2>
-              <p className="mt-2 text-sm text-neutral-500">
-                Enviamos un link de acceso a <strong>{email}</strong>. Haz clic en el link para entrar a tu portal.
+          <h2 className="mb-2 font-heading text-xl text-neutral-800">Acceso por link del profesor</h2>
+          <p className="mb-6 text-sm text-neutral-500">
+            Tu profesor te comparte un link privado de acceso. Abre ese link y entraras automaticamente a tu portal.
+          </p>
+
+          {errorMessage && (
+            <div className="mb-4 rounded-lg bg-error-light p-3 text-sm text-error">
+              <p className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.75} />
+                <span>{errorMessage}</span>
               </p>
-              <Button
-                variant="outline"
-                className="btn-secondary mt-6"
-                onClick={() => { setSent(false); setEmail('') }}
-              >
-                Usar otro email
-              </Button>
             </div>
-          ) : (
-            <>
-              <h2 className="mb-2 font-heading text-xl text-neutral-800">Accede a tu portal</h2>
-              <p className="mb-6 text-sm text-neutral-500">
-                Ingresa tu email para recibir un link de acceso seguro.
-              </p>
-
-              {error && (
-                <div className="mb-4 rounded-lg bg-error-light p-3 text-sm text-error">{error}</div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-neutral-700">Email</Label>
-                  <div className="relative mt-1">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" strokeWidth={1.75} />
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="tu@email.com"
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <Button type="submit" className="btn-primary w-full gap-2" disabled={loading || !email.trim()}>
-                  {loading ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
-                  ) : (
-                    <>Recibir link de acceso</>
-                  )}
-                </Button>
-              </form>
-            </>
           )}
+
+          <div className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600">
+            <p className="flex items-center gap-2">
+              <LinkIcon className="h-4 w-4 text-primary-600" strokeWidth={1.75} />
+              Si no tienes link, solicitale uno nuevo a tu profesor.
+            </p>
+            <p className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-primary-600" strokeWidth={1.75} />
+              El link puede llegar por WhatsApp o correo.
+            </p>
+          </div>
         </div>
 
         <p className="mt-6 text-center text-xs text-neutral-400">

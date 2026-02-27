@@ -75,13 +75,17 @@ export default function StudentDashboardPage() {
         .single()
 
       if (!student) {
+        const normalizedUserEmail = user.email?.trim().toLowerCase()
+
         // Check if this is a student who needs linking
-        const { data: studentByEmail } = await supabase
-          .from('students')
-          .select('*')
-          .eq('email', user.email)
-          .is('auth_id', null)
-          .single()
+        const { data: studentByEmail } = normalizedUserEmail
+          ? await supabase
+              .from('students')
+              .select('*')
+              .eq('email', normalizedUserEmail)
+              .is('auth_id', null)
+              .single()
+          : { data: null }
 
         if (studentByEmail) {
           // Link auth_id to student

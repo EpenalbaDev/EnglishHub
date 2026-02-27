@@ -62,9 +62,11 @@ export function useStudents(options: UseStudentsOptions = {}) {
 
     if (!tutor) throw new Error('Tutor not found')
 
+    const normalizedEmail = data.email?.trim().toLowerCase() || null
+
     const { data: student, error } = await supabase
       .from('students')
-      .insert({ ...data, tutor_id: tutor.id })
+      .insert({ ...data, email: normalizedEmail, tutor_id: tutor.id })
       .select()
       .single()
 
@@ -74,9 +76,11 @@ export function useStudents(options: UseStudentsOptions = {}) {
   }
 
   const updateStudent = async (id: string, data: Partial<Student>) => {
+    const normalizedEmail = data.email === undefined ? undefined : data.email?.trim().toLowerCase() || null
+
     const { data: student, error } = await supabase
       .from('students')
-      .update(data)
+      .update({ ...data, email: normalizedEmail })
       .eq('id', id)
       .select()
       .single()

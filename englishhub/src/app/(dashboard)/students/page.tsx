@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react'
 import { Plus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -10,6 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useStudents } from '@/hooks/useStudents'
 import { StudentTable } from '@/components/students/StudentTable'
 import { StudentForm, type StudentFormData } from '@/components/students/StudentForm'
@@ -27,6 +37,13 @@ export default function StudentsPage() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
   const [deletingStudent, setDeletingStudent] = useState<Student | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [accessLinkStudent, setAccessLinkStudent] = useState<Student | null>(null)
+  const [accessLinkHours, setAccessLinkHours] = useState('24')
+  const [accessLinkValue, setAccessLinkValue] = useState('')
+  const [accessLinkExpiresAt, setAccessLinkExpiresAt] = useState('')
+  const [accessLinkLoading, setAccessLinkLoading] = useState(false)
+  const [accessLinkError, setAccessLinkError] = useState('')
+  const [accessLinkCopied, setAccessLinkCopied] = useState(false)
 
   const { students, loading, createStudent, updateStudent, deleteStudent } = useStudents({
     status: statusFilter,
@@ -67,6 +84,55 @@ export default function StudentsPage() {
     } finally {
       setDeleteLoading(false)
     }
+  }
+
+  const handleOpenAccessLinkDialog = (student: Student) => {
+    setAccessLinkStudent(student)
+    setAccessLinkHours('24')
+    setAccessLinkValue('')
+    setAccessLinkExpiresAt('')
+    setAccessLinkError('')
+    setAccessLinkCopied(false)
+  }
+
+  const handleGenerateAccessLink = async () => {
+    if (!accessLinkStudent) return
+
+    const parsedHours = Number(accessLinkHours)
+    const expiresInHours = Number.isFinite(parsedHours)
+      ? Math.min(Math.max(Math.floor(parsedHours), 1), 24 * 30)
+      : 24
+
+    setAccessLinkLoading(true)
+    setAccessLinkError('')
+    setAccessLinkCopied(false)
+
+    try {
+      const response = await fetch(`/api/students/${accessLinkStudent.id}/access-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expiresInHours }),
+      })
+
+      const payload = await response.json()
+      if (!response.ok) {
+        throw new Error(payload.error || 'No se pudo generar el link de acceso.')
+      }
+
+      setAccessLinkValue(payload.url)
+      setAccessLinkExpiresAt(payload.expiresAt)
+    } catch (err) {
+      setAccessLinkError(err instanceof Error ? err.message : 'No se pudo generar el link de acceso.')
+    } finally {
+      setAccessLinkLoading(false)
+    }
+  }
+
+  const handleCopyAccessLink = async () => {
+    if (!accessLinkValue) return
+    await navigator.clipboard.writeText(accessLinkValue)
+    setAccessLinkCopied(true)
+    setTimeout(() => setAccessLinkCopied(false), 2000)
   }
 
   return (
@@ -144,6 +210,7 @@ export default function StudentsPage() {
           students={filteredStudents}
           onEdit={handleEdit}
           onDelete={setDeletingStudent}
+          onGenerateAccessLink={handleOpenAccessLinkDialog}
         />
       )}
 
@@ -166,6 +233,62 @@ export default function StudentsPage() {
         loading={deleteLoading}
         variant="danger"
       />
+
+      <Dialog open={!!accessLinkStudent} onOpenChange={(open) => !open && setAccessLinkStudent(null)}>
+        <DialogContent className="sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle>Link de acceso para estudiante</DialogTitle>
+            <DialogDescription>
+              Genera un link de acceso para {accessLinkStudent?.full_name}. El estudiante podra entrar sin registrarse.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="access-link-hours">Expiracion (horas)</Label>
+              <Input
+                id="access-link-hours"
+                type="number"
+                min={1}
+                max={24 * 30}
+                value={accessLinkHours}
+                onChange={(event) => setAccessLinkHours(event.target.value)}
+                className="mt-1.5"
+              />
+              <p className="mt-1 text-xs text-neutral-500">Minimo 1 hora, maximo 720 horas (30 dias).</p>
+            </div>
+
+            <Button onClick={handleGenerateAccessLink} disabled={accessLinkLoading} className="btn-primary">
+              {accessLinkLoading ? 'Generando...' : 'Generar link'}
+            </Button>
+
+            {accessLinkError && (
+              <p className="rounded-md bg-error-light px-3 py-2 text-sm text-error">{accessLinkError}</p>
+            )}
+
+            {accessLinkValue && (
+              <div className="space-y-2 rounded-md border border-neutral-200 p-3">
+                <Label htmlFor="access-link-value">Link generado</Label>
+                <Input id="access-link-value" readOnly value={accessLinkValue} />
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs text-neutral-500">
+                    Expira: {new Date(accessLinkExpiresAt).toLocaleString('es-PA')}
+                  </p>
+                  <Button variant="outline" onClick={handleCopyAccessLink} className="btn-secondary">
+                    {accessLinkCopied ? 'Copiado' : 'Copiar link'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" className="btn-secondary" onClick={() => setAccessLinkStudent(null)}>
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
