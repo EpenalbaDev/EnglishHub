@@ -1,4 +1,4 @@
-# EnglishHub — Arquitectura & Overview del Proyecto
+# HavenLanguage — Arquitectura & Overview del Proyecto
 
 > Plataforma para profesores de inglés independientes.
 > Gestión de estudiantes, lecciones interactivas, tareas, pagos y agenda.

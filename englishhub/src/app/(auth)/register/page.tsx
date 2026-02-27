@@ -77,7 +77,7 @@ export default function RegisterPage() {
     <div className="animate-fade-in">
       {/* Logo */}
       <div className="mb-8 text-center">
-        <h1 className="font-heading text-3xl text-primary-800">EnglishHub</h1>
+        <h1 className="font-heading text-3xl text-primary-800">HavenLanguage</h1>
         <p className="mt-2 text-sm text-neutral-500">{t('registerTagline')}</p>
       </div>
 

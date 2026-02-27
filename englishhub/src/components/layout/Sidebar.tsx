@@ -12,18 +12,22 @@ import {
   CreditCard,
   Settings,
   LogOut,
+  Shield,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, getInitials } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { getLocaleFromClientPathname, toLocalizedPath } from '@/i18n/navigation'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface SidebarProps {
   tutorName?: string
   tutorEmail?: string
+  tutorAvatarUrl?: string | null
+  isSuperAdmin?: boolean
 }
 
-export function Sidebar({ tutorName = 'Profesor', tutorEmail }: SidebarProps) {
+export function Sidebar({ tutorName = 'Profesor', tutorEmail, tutorAvatarUrl, isSuperAdmin = false }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const t = useTranslations('DashboardNav')
@@ -55,6 +59,7 @@ export function Sidebar({ tutorName = 'Profesor', tutorEmail }: SidebarProps) {
       label: t('account'),
       items: [
         { href: '/settings', icon: Settings, label: t('settings') },
+        ...(isSuperAdmin ? [{ href: '/super-admin', icon: Shield, label: t('superAdmin') }] : []),
       ],
     },
   ]
@@ -66,10 +71,10 @@ export function Sidebar({ tutorName = 'Profesor', tutorEmail }: SidebarProps) {
   }
 
   return (
-    <aside className="flex h-screen w-[260px] flex-col bg-[var(--bg-sidebar)] text-white">
+    <aside className="flex h-screen w-[260px] flex-col bg-(--bg-sidebar) text-white">
       {/* Logo */}
       <div className="px-6 py-6">
-        <h1 className="font-heading text-xl tracking-tight">EnglishHub</h1>
+        <h1 className="font-heading text-xl tracking-tight">HavenLanguage</h1>
       </div>
 
       {/* Navigation */}
@@ -103,9 +108,12 @@ export function Sidebar({ tutorName = 'Profesor', tutorEmail }: SidebarProps) {
       {/* Bottom — User info + Logout */}
       <div className="border-t border-white/10 p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-sm font-medium">
-            {tutorName.charAt(0).toUpperCase()}
-          </div>
+          <Avatar className="h-9 w-9 bg-white/10">
+            {tutorAvatarUrl && <AvatarImage src={tutorAvatarUrl} alt={tutorName} />}
+            <AvatarFallback className="bg-white/10 text-white text-sm font-medium">
+              {getInitials(tutorName)}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <p className="truncate text-sm font-medium text-white">{tutorName}</p>
             {tutorEmail && (

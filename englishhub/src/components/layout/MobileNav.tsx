@@ -13,20 +13,31 @@ import {
   Settings,
   LogOut,
   X,
+  Shield,
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { cn } from '@/lib/utils'
+import { cn, getInitials } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { getLocaleFromClientPathname, toLocalizedPath } from '@/i18n/navigation'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface MobileNavProps {
   open: boolean
   onClose: () => void
   tutorName?: string
   tutorEmail?: string
+  tutorAvatarUrl?: string | null
+  isSuperAdmin?: boolean
 }
 
-export function MobileNav({ open, onClose, tutorName = 'Profesor', tutorEmail }: MobileNavProps) {
+export function MobileNav({
+  open,
+  onClose,
+  tutorName = 'Profesor',
+  tutorEmail,
+  tutorAvatarUrl,
+  isSuperAdmin = false,
+}: MobileNavProps) {
   const pathname = usePathname()
   const router = useRouter()
   const t = useTranslations('DashboardNav')
@@ -40,6 +51,7 @@ export function MobileNav({ open, onClose, tutorName = 'Profesor', tutorEmail }:
     { href: '/students', icon: Users, label: t('students') },
     { href: '/payments', icon: CreditCard, label: t('payments') },
     { href: '/settings', icon: Settings, label: t('settings') },
+    ...(isSuperAdmin ? [{ href: '/super-admin', icon: Shield, label: t('superAdmin') }] : []),
   ]
 
   const handleLogout = async () => {
@@ -51,13 +63,15 @@ export function MobileNav({ open, onClose, tutorName = 'Profesor', tutorEmail }:
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="left" className="w-[280px] bg-[var(--bg-sidebar)] p-0 border-none [&>button]:hidden">
+      <SheetContent side="left" className="w-[280px] bg-(--bg-sidebar) p-0 border-none [&>button]:hidden">
         <SheetHeader className="px-6 py-6">
           <div className="flex items-center justify-between">
-            <SheetTitle className="font-heading text-xl text-white">EnglishHub</SheetTitle>
+            <SheetTitle className="font-heading text-xl text-white">HavenLanguage</SheetTitle>
             <button
               onClick={onClose}
               className="rounded-md p-1.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Cerrar menú"
+              title="Cerrar menú"
             >
               <X className="h-5 w-5" strokeWidth={1.75} />
             </button>
@@ -87,9 +101,12 @@ export function MobileNav({ open, onClose, tutorName = 'Profesor', tutorEmail }:
 
         <div className="mt-auto border-t border-white/10 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-sm font-medium text-white">
-              {tutorName.charAt(0).toUpperCase()}
-            </div>
+            <Avatar className="h-9 w-9 bg-white/10">
+              {tutorAvatarUrl && <AvatarImage src={tutorAvatarUrl} alt={tutorName} />}
+              <AvatarFallback className="bg-white/10 text-white text-sm font-medium">
+                {getInitials(tutorName)}
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
               <p className="truncate text-sm font-medium text-white">{tutorName}</p>
               {tutorEmail && (

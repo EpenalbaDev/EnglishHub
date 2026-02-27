@@ -45,7 +45,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-englishhub-locale', locale)
+  requestHeaders.set('x-havenlanguage-locale', locale)
   const rewriteUrl = request.nextUrl.clone()
   rewriteUrl.pathname = normalizedPathname
 

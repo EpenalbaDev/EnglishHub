@@ -45,7 +45,7 @@ export async function updateSession(request: NextRequest, options: UpdateSession
     !user &&
     (
       options.pathnameForAuthCheck === '/' ||
-      options.pathnameForAuthCheck.match(/^\/(students|lessons|assignments|payments|calendar|settings)(\/.*)?$/)
+      options.pathnameForAuthCheck.match(/^\/(students|lessons|assignments|payments|calendar|settings|super-admin)(\/.*)?$/)
     )
   ) {
     const url = request.nextUrl.clone()

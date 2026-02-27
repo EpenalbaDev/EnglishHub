@@ -36,6 +36,7 @@
     "students": "Students",
     "payments": "Payments",
     "settings": "Settings",
+    "superAdmin": "Super Admin",
     "logout": "Sign out"
   },
   "Settings": {
@@ -58,6 +59,14 @@
     "saveButton": "Save changes",
     "savingButton": "Saving...",
     "saved": "Preferences saved successfully.",
-    "saveError": "Could not save preferences. Please try again."
+    "saveError": "Could not save preferences. Please try again.",
+    "profileCardTitle": "Profile photo",
+    "profileCardDescription": "Upload an avatar to show it in the sidebar and to your students.",
+    "profileUploadLabel": "Select image",
+    "profileAcceptedFormats": "PNG, JPG or WEBP up to 2MB.",
+    "profileInvalidType": "Invalid format. Use PNG, JPG or WEBP.",
+    "profileInvalidSize": "Image is too large. Max 2MB.",
+    "profileUploadError": "Could not upload image. Verify the 'avatars' bucket exists in Supabase.",
+    "profileUploadSuccess": "Profile photo updated."
   }
 }

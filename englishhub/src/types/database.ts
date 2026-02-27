@@ -12,6 +12,28 @@ export interface Tutor {
   updated_at: string
 }
 
+export type SaaSPlan = 'trial' | 'starter' | 'pro'
+export type AccountStatus = 'active' | 'suspended'
+
+export interface AdminRole {
+  id: string
+  user_id: string
+  role: 'super_admin'
+  created_at: string
+}
+
+export interface TutorSubscription {
+  id: string
+  tutor_id: string
+  plan: SaaSPlan
+  status: AccountStatus
+  trial_ends_at: string | null
+  current_period_start: string | null
+  current_period_end: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Student {
   id: string
   tutor_id: string

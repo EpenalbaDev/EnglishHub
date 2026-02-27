@@ -21,12 +21,14 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency, formatDate, getInitials } from '@/lib/utils'
 import type { Student, Payment, ScheduledClass } from '@/types/database'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 type Tab = 'progress' | 'classes' | 'assignments' | 'summaries' | 'payments'
 
 interface StudentData {
   student: Student
   tutorName: string
+  tutorAvatarUrl: string | null
   stats: {
     completedClasses: number
     completedAssignments: number
@@ -101,7 +103,7 @@ export default function StudentDashboardPage() {
       // Fetch tutor name
       const { data: tutor } = await supabase
         .from('tutors')
-        .select('full_name, business_name')
+        .select('full_name, business_name, avatar_url')
         .eq('id', student.tutor_id)
         .single()
 
@@ -238,6 +240,7 @@ export default function StudentDashboardPage() {
       setData({
         student: student as Student,
         tutorName,
+        tutorAvatarUrl: tutor?.avatar_url ?? null,
         stats: {
           completedClasses: completedClasses || 0,
           completedAssignments,
@@ -261,7 +264,7 @@ export default function StudentDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--neutral-50)]">
+      <div className="flex min-h-screen items-center justify-center bg-neutral-50">
         <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
       </div>
     )
@@ -269,7 +272,7 @@ export default function StudentDashboardPage() {
 
   if (error || !data) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--neutral-50)] px-4">
+      <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4">
         <div className="card-base max-w-md text-center">
           <User className="mx-auto h-12 w-12 text-neutral-300" strokeWidth={1.5} />
           <h2 className="mt-4 font-heading text-xl text-neutral-700">Error</h2>
@@ -288,7 +291,7 @@ export default function StudentDashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[var(--neutral-50)]">
+    <div className="min-h-screen bg-neutral-50">
       {/* Header */}
       <header className="border-b border-neutral-200 bg-white px-4 py-4">
         <div className="mx-auto flex max-w-[960px] items-center gap-4">
@@ -297,7 +300,13 @@ export default function StudentDashboardPage() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-neutral-800 truncate">{data.student.full_name}</p>
-            <p className="text-xs text-neutral-400">{data.tutorName}</p>
+            <div className="mt-0.5 flex items-center gap-2">
+              <Avatar size="sm" className="h-5 w-5">
+                {data.tutorAvatarUrl && <AvatarImage src={data.tutorAvatarUrl} alt={data.tutorName} />}
+                <AvatarFallback className="text-[10px]">{getInitials(data.tutorName)}</AvatarFallback>
+              </Avatar>
+              <p className="text-xs text-neutral-400">{data.tutorName}</p>
+            </div>
           </div>
           <button
             onClick={handleLogout}
@@ -339,7 +348,7 @@ export default function StudentDashboardPage() {
       </div>
 
       <footer className="py-6 text-center text-xs text-neutral-300">
-        Creado con EnglishHub
+        Creado con HavenLanguage
       </footer>
     </div>
   )

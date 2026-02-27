@@ -1,6 +1,6 @@
-# EnglishHub — Design System & UI Guidelines
+# HavenLanguage — Design System & UI Guidelines
 
-> Este documento es la fuente de verdad para el diseño visual de EnglishHub.
+> Este documento es la fuente de verdad para el diseño visual de HavenLanguage.
 > Todos los componentes, páginas y features DEBEN seguir estas guías.
 > Léelo ANTES de implementar cualquier UI.
 

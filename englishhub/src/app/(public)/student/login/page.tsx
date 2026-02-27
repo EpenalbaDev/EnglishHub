@@ -44,7 +44,7 @@ export default function StudentLoginPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600">
             <BookOpen className="h-7 w-7 text-white" strokeWidth={1.75} />
           </div>
-          <h1 className="font-heading text-2xl text-neutral-800">EnglishHub</h1>
+          <h1 className="font-heading text-2xl text-neutral-800">HavenLanguage</h1>
           <p className="mt-1 text-sm text-neutral-500">Portal del Estudiante</p>
         </div>
 

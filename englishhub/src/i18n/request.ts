@@ -6,7 +6,7 @@ export default getRequestConfig(async () => {
   const headersList = await headers()
   const cookieStore = await cookies()
 
-  const localeFromHeader = headersList.get('x-englishhub-locale')
+  const localeFromHeader = headersList.get('x-havenlanguage-locale')
   const localeFromCookie = cookieStore.get(localeCookieName)?.value
   const locale = isLocale(localeFromHeader)
     ? localeFromHeader

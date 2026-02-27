@@ -9,22 +9,41 @@ interface DashboardShellProps {
   children: React.ReactNode
   tutorName: string
   tutorEmail: string
+  tutorAvatarUrl: string | null
   preferences: UserPreferences
+  isSuperAdmin: boolean
 }
 
-export function DashboardShell({ children, tutorName, tutorEmail, preferences }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  tutorName,
+  tutorEmail,
+  tutorAvatarUrl,
+  preferences,
+  isSuperAdmin,
+}: DashboardShellProps) {
   return (
     <div className="flex h-screen overflow-hidden">
       <PreferencesSync preferences={preferences} />
       {/* Sidebar — hidden on mobile */}
       <div className="hidden lg:block">
-        <Sidebar tutorName={tutorName} tutorEmail={tutorEmail} />
+        <Sidebar
+          tutorName={tutorName}
+          tutorEmail={tutorEmail}
+          tutorAvatarUrl={tutorAvatarUrl}
+          isSuperAdmin={isSuperAdmin}
+        />
       </div>
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile header */}
-        <Header tutorName={tutorName} tutorEmail={tutorEmail} />
+        <Header
+          tutorName={tutorName}
+          tutorEmail={tutorEmail}
+          tutorAvatarUrl={tutorAvatarUrl}
+          isSuperAdmin={isSuperAdmin}
+        />
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">

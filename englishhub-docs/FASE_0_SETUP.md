@@ -16,8 +16,8 @@ Leer ANTES de empezar:
 ## Paso 1: Crear proyecto Next.js
 
 ```bash
-npx create-next-app@latest englishhub --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
-cd englishhub
+npx create-next-app@latest havenlanguage --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
+cd havenlanguage
 ```
 
 ---
@@ -398,7 +398,7 @@ export function generateShareUrl(token: string): string {
 Implementar la sidebar según el Design System:
 - Fondo: `bg-[#115e59]` (--bg-sidebar)
 - Ancho: 260px fijo en desktop, sheet en mobile
-- Logo: "EnglishHub" en DM Serif Display, blanco
+- Logo: "HavenLanguage" en DM Serif Display, blanco
 - Secciones de navegación:
   - **GENERAL**: Dashboard (LayoutDashboard), Calendario (Calendar)
   - **ENSEÑANZA**: Lecciones (BookOpen), Tareas (ClipboardList)
@@ -430,7 +430,7 @@ Implementar la sidebar según el Design System:
 ### `src/app/(auth)/login/page.tsx`
 
 - Diseño centrado, card con sombra suave
-- Logo "EnglishHub" arriba con DM Serif Display
+- Logo "HavenLanguage" arriba con DM Serif Display
 - Subtitle: "Gestiona tus clases de inglés"
 - Form: email + password + botón "Iniciar Sesión" (btn-primary)
 - Link "¿No tienes cuenta? Regístrate"

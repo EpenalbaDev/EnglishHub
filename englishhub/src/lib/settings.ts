@@ -58,3 +58,23 @@ export async function updateCurrentUserPreferences(preferences: UserPreferences)
 
   return {}
 }
+
+export async function updateCurrentUserAvatar(avatarUrl: string | null): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Unauthorized' }
+  }
+
+  const { error } = await supabase
+    .from('tutors')
+    .update({ avatar_url: avatarUrl })
+    .eq('auth_id', user.id)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return {}
+}

@@ -1,4 +1,4 @@
-# EnglishHub — Guía de Implementación
+# HavenLanguage — Guía de Implementación
 
 > Plataforma para profesores de inglés independientes.
 > Stack: Next.js 16 + Supabase + Tailwind + shadcn/ui

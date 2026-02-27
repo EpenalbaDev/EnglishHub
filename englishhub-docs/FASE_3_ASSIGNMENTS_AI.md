@@ -404,7 +404,7 @@ Format your response as JSON:
 - Resumen en texto formateado
 - Key points en cards
 - Ejemplos con highlight
-- Footer: "Creado con EnglishHub"
+- Footer: "Creado con HavenLanguage"
 
 ---
 

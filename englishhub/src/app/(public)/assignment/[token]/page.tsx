@@ -161,7 +161,7 @@ export default function PublicAssignmentPage() {
       <div className="mx-auto max-w-[720px]">
         {/* Header */}
         <div className="mb-6 text-center">
-          <p className="text-xs font-medium uppercase tracking-wider text-primary-600">EnglishHub</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-primary-600">HavenLanguage</p>
           <h1 className="mt-2 font-heading text-2xl text-neutral-800 lg:text-3xl">{assignment.title}</h1>
           {assignment.description && (
             <p className="mt-2 text-sm text-neutral-500">{assignment.description}</p>
@@ -299,7 +299,7 @@ export default function PublicAssignmentPage() {
 
         {/* Footer */}
         <p className="mt-8 text-center text-xs text-neutral-300">
-          Creado con EnglishHub
+          Creado con HavenLanguage
         </p>
       </div>
     </div>

@@ -135,7 +135,7 @@ export default function PublicSummaryPage() {
 
         {/* Footer */}
         <div className="mt-12 text-center">
-          <p className="text-xs text-neutral-300">Creado con EnglishHub</p>
+          <p className="text-xs text-neutral-300">Creado con HavenLanguage</p>
         </div>
       </div>
     </div>

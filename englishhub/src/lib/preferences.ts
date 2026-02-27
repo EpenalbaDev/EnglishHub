@@ -6,7 +6,7 @@ export type AppPalette = (typeof appPalettes)[number]
 
 export const appModes = ['light', 'dark'] as const
 export type AppMode = (typeof appModes)[number]
-export const preferencesStorageKey = 'englishhub.preferences'
+export const preferencesStorageKey = 'havenlanguage.preferences'
 
 export interface UserPreferences {
   language: AppLocale
