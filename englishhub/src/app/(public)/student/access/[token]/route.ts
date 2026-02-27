@@ -46,7 +46,8 @@ export async function GET(
     type: 'magiclink',
     email,
     options: {
-      redirectTo: `${request.nextUrl.origin}/student/dashboard`,
+      // Use localized route directly to avoid middleware locale redirect dropping auth tokens.
+      redirectTo: `${request.nextUrl.origin}/es/student/dashboard`,
     },
   })
 
