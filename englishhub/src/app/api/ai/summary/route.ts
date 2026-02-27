@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import Anthropic from '@anthropic-ai/sdk'
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,16 +65,13 @@ export async function POST(request: NextRequest) {
       return `[${s.type.toUpperCase()}] ${s.title}\n${content}`
     }).join('\n\n')
 
-    // Call Anthropic Claude API
-    const anthropic = new Anthropic()
+    // Call Mistral API
+    const mistralApiKey = process.env.MISTRAL_API_KEY
+    if (!mistralApiKey) {
+      return NextResponse.json({ error: 'MISTRAL_API_KEY is missing' }, { status: 500 })
+    }
 
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 1500,
-      messages: [
-        {
-          role: 'user',
-          content: `You are an English teacher's assistant. Based on the following lesson content, generate a class summary that the teacher can share with students after the lesson.
+    const prompt = `You are an English teacher's assistant. Based on the following lesson content, generate a class summary that the teacher can share with students after the lesson.
 
 LESSON: ${lesson.title}
 LEVEL: ${lesson.level || 'Not specified'}
@@ -96,12 +92,33 @@ Format your response as JSON:
     { "sentence": "example sentence", "explanation": "why this is important" }
   ]
 }`
-        }
-      ],
+
+    const mistralResponse = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${mistralApiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'mistral-small-latest',
+        max_tokens: 1500,
+        temperature: 0.2,
+        response_format: { type: 'json_object' },
+        messages: [{ role: 'user', content: prompt }],
+      }),
     })
 
+    if (!mistralResponse.ok) {
+      const providerError = await mistralResponse.text()
+      throw new Error(`Mistral API error (${mistralResponse.status}): ${providerError}`)
+    }
+
+    const completion = await mistralResponse.json() as {
+      choices?: Array<{ message?: { content?: string } }>
+    }
+
     // Parse response
-    const responseText = message.content[0].type === 'text' ? message.content[0].text : ''
+    const responseText = completion.choices?.[0]?.message?.content || ''
 
     let parsed: { content: string; key_points: string[]; examples: { sentence: string; explanation: string }[] }
     try {
