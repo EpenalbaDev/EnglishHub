@@ -85,5 +85,23 @@ export async function GET(
     })
     .eq('id', linkRecord.id)
 
-  return NextResponse.redirect(generatedLink.data.properties.action_link)
+  const actionLink = generatedLink.data.properties.action_link
+  let confirmUrl: URL | null = null
+
+  try {
+    const parsedActionLink = new URL(actionLink)
+    const tokenHash = parsedActionLink.searchParams.get('token_hash')
+    const type = parsedActionLink.searchParams.get('type')
+
+    if (tokenHash && type) {
+      confirmUrl = new URL('/auth/confirm', request.nextUrl.origin)
+      confirmUrl.searchParams.set('token_hash', tokenHash)
+      confirmUrl.searchParams.set('type', type)
+      confirmUrl.searchParams.set('next', '/student/dashboard')
+    }
+  } catch {
+    // Fallback below if action_link cannot be parsed.
+  }
+
+  return NextResponse.redirect(confirmUrl ?? actionLink)
 }
