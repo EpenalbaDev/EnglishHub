@@ -6,6 +6,12 @@ function hashToken(token: string) {
   return createHash('sha256').update(token).digest('hex')
 }
 
+function redirectToLoginWithError(origin: string, errorCode: string) {
+  const loginUrl = new URL('/student/login', origin)
+  loginUrl.searchParams.set('error', errorCode)
+  return NextResponse.redirect(loginUrl)
+}
+
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ token: string }> }
@@ -24,9 +30,7 @@ export async function GET(
     .single()
 
   if (linkError || !linkRecord) {
-    const loginUrl = new URL('/student/login', request.nextUrl.origin)
-    loginUrl.searchParams.set('error', 'link_expired')
-    return NextResponse.redirect(loginUrl)
+    return redirectToLoginWithError(request.nextUrl.origin, 'link_expired')
   }
 
   const { data: student } = await admin
@@ -37,24 +41,40 @@ export async function GET(
 
   const email = student?.email?.trim().toLowerCase()
   if (!email) {
-    const loginUrl = new URL('/student/login', request.nextUrl.origin)
-    loginUrl.searchParams.set('error', 'student_without_email')
-    return NextResponse.redirect(loginUrl)
+    return redirectToLoginWithError(request.nextUrl.origin, 'student_without_email')
   }
 
-  const { data: generated, error: generateError } = await admin.auth.admin.generateLink({
+  const redirectTo = `${request.nextUrl.origin}/es/student/dashboard`
+
+  let generatedLink = await admin.auth.admin.generateLink({
     type: 'magiclink',
     email,
-    options: {
-      // Use localized route directly to avoid middleware locale redirect dropping auth tokens.
-      redirectTo: `${request.nextUrl.origin}/es/student/dashboard`,
-    },
+    options: { redirectTo },
   })
 
-  if (generateError || !generated?.properties?.action_link) {
-    const loginUrl = new URL('/student/login', request.nextUrl.origin)
-    loginUrl.searchParams.set('error', 'magic_link_failed')
-    return NextResponse.redirect(loginUrl)
+  // If user does not exist in auth yet, create it and retry.
+  if (generatedLink.error) {
+    const err = generatedLink.error.message.toLowerCase()
+    if (err.includes('user not found') || err.includes('email not found')) {
+      const created = await admin.auth.admin.createUser({
+        email,
+        email_confirm: true,
+      })
+
+      if (created.error && !created.error.message.toLowerCase().includes('already')) {
+        return redirectToLoginWithError(request.nextUrl.origin, 'magic_link_failed')
+      }
+
+      generatedLink = await admin.auth.admin.generateLink({
+        type: 'magiclink',
+        email,
+        options: { redirectTo },
+      })
+    }
+  }
+
+  if (generatedLink.error || !generatedLink.data?.properties?.action_link) {
+    return redirectToLoginWithError(request.nextUrl.origin, 'magic_link_failed')
   }
 
   await admin
@@ -65,5 +85,5 @@ export async function GET(
     })
     .eq('id', linkRecord.id)
 
-  return NextResponse.redirect(generated.properties.action_link)
+  return NextResponse.redirect(generatedLink.data.properties.action_link)
 }
